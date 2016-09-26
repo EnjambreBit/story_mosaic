@@ -33,14 +33,14 @@ include 'common/header.php';
 		$user = "digitalh";
 		$list = "";
 		$sort_order = "9999";
-		
-		
+
+
 		// First check if the file exists
 		if (file_exists($new_name)) {
 			echo "Ya existe un archivo con ese nombre. Chequear, mostrar, preguntar y eso es lo que falta. Por ahora no te dejo subir la imagen";
 			die();
-		} 
-		
+		}
+
 		// Check if project directory exists
 		if (!file_exists($project_dir)) {
 			$project_dir_status = "Didn't Exist, created.";
@@ -48,7 +48,7 @@ include 'common/header.php';
 		} else {
 			$project_dir_status = "Exists!";
 		}
-		
+
 		// Check for subfolders
 		if (!file_exists($path1)) {
 			$path1_status = "Didn't Exist, created.";
@@ -64,26 +64,26 @@ include 'common/header.php';
 			$final_destination_status = "Exists";
 		}
 
-	
+
 		if (move_uploaded_file($_FILES['userfile']['tmp_name'], $upload_tmp_file)) {
 			$sha1 = sha1($upload_tmp_name); // Get the Sha1sum of the downloaded file
 			$original_name = $upload_tmp_file;
 			$old = umask(0);
 			chmod($upload_tmp_file, 0666);
 			umask($old);
-			if ($old != umask()) { 
-				die ("Problemas de permisos"); 
+			if ($old != umask()) {
+				die ("Problemas de permisos");
 			}
 			rename($original_name, $new_name);
-			
+
 		} else {
 			echo "Error al subir el archivo";
 		}
-		
+
 		$sql = "INSERT INTO `story_images` (`id`, `name`, `description`, `source_name`, `sha1`, `date`, `time`, `user`, `project`, `scene`, `shot`, `dialog`, `filetype`, `list`, `sort_order`) VALUES (NULL, '$name', ' $description' , '$source_name' , '$sha1', '$date', '$time', '$user', '$project', '$scene', '$shot', '$dialog', '$type','$list','$sort_order')";
 		mysql_query($sql) or die("Error al tratar de ingresar el still a la base de datos");
-		
-// Debug		
+
+// Debug
 		echo "
 <h3><a href='story_upload_still.php'>Agregar Otra</a></h3>
 <b>--- Debug ---</b><br>
@@ -109,12 +109,16 @@ sql: {$sql}<br>
 this is the image<br>
 <img src='{$new_name}' />
 ";
-		
+
 	} else {
 // The Forms
 ?>
 <div id="wrapper">
 	<?php //include 'common/top_menu.php'; ?>
+	<?php
+	$query_p = "SELECT * FROM `projects`";
+	$result_p = mysql_query($query_p);
+	?>
 	<div id="content">
 		<div id="content_area">
 		<form method="post" action="" enctype="multipart/form-data">
@@ -128,32 +132,42 @@ this is the image<br>
 				</p>
 				<p>
 					<label for="name">Name</label><br>
-					<input id="name" size="30" name="name" type="text" tabindex="2"> 
+					<input id="name" size="30" name="name" type="text" tabindex="2">
 				</p>
 				<p>
 					<label for="project">Project</label><br>
-					<input id="project" size="30" name="project" type="text" tabindex="3" value="Proyecto Mercator"> 
+					<select id="project" name="project" tabindex="3">
+					<?php
+					while ($row = mysql_fetch_array($result_p, MYSQL_ASSOC)) {
+						$pid = $row['id'];
+						$project_name = $row['project_name'];
+					?>
+					<option value="<?php echo $project_name; ?>"><?php echo $project_name; ?></option>
+					<?php
+					}
+					?>
+				</select>
 				</p>
 				<p>
 					<label for="scene">Scene</label><br>
-					<input id="scene" size="5" name="scene" type="text" tabindex="4"> 
+					<input id="scene" size="5" name="scene" type="text" tabindex="4">
 				</p>
 				<p>
 					<label for="shot">Shot</label><br>
-					<input id="shot" size="5" name="shot" type="text" tabindex="5"> 
+					<input id="shot" size="5" name="shot" type="text" tabindex="5">
 				</p>
 				<p>
 					<label for="description">Description</label><br>
-					<textarea id="description" rows="5" cols="40" name="description" tabindex="6"></textarea> 
+					<textarea id="description" rows="5" cols="40" name="description" tabindex="6"></textarea>
 				</p>
 				<p>
 					<label for="dialog">Dialog</label><br>
-					<textarea id="dialog" rows="5" cols="40" name="dialog" tabindex="7"></textarea> 
+					<textarea id="dialog" rows="5" cols="40" name="dialog" tabindex="7"></textarea>
 				</p>
-				<p>   
+				<p>
 					<input type="submit" name="submit" value="Upload">
 				</p>
-			</fieldset>   
+			</fieldset>
 		</form>
 		</div>
 	</div>
